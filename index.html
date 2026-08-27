@@ -198,20 +198,20 @@ footer{margin-left:var(--rail-w);}
 .hero-bg img{
   position:absolute; top:50%; left:50%; min-width:100%; min-height:130%;
   width:auto; height:auto; transform:translate(-50%,-50%);
-  object-fit:cover; filter:grayscale(35%) contrast(1.08) brightness(.55);
+  object-fit:cover; filter:grayscale(25%) contrast(1.08) brightness(.78);
   will-change:transform;
 }
 .hero-bg::after{
   content:""; position:absolute; inset:0;
   background:
-    linear-gradient(180deg, rgba(10,14,18,.55) 0%, rgba(10,14,18,.75) 55%, var(--ink) 100%),
+    linear-gradient(180deg, rgba(10,14,18,.28) 0%, rgba(10,14,18,.5) 55%, var(--ink) 100%),
     radial-gradient(700px 460px at 15% 15%, rgba(76,232,176,.10), transparent 60%),
     radial-gradient(600px 420px at 88% 80%, rgba(255,159,69,.08), transparent 60%);
 }
 .hero-scan{
   position:absolute; inset:0; pointer-events:none; z-index:1;
 }
-.hero .container{position:relative; z-index:2;}
+.hero .container{position:relative; z-index:2; text-align:left;}
 .hero-kicker{
   font-family:var(--font-mono); font-size:13px; color:var(--trace);
   letter-spacing:.16em; text-transform:uppercase; margin-bottom:22px;
@@ -221,10 +221,13 @@ footer{margin-left:var(--rail-w);}
 @keyframes pulse-dot{0%,100%{opacity:1;} 50%{opacity:.3;}}
 
 .hero h1{
-  font-size:clamp(42px, 8vw, 92px); line-height:.98; letter-spacing:-.02em;
-  margin-bottom:22px;
+  font-size:clamp(30px, 6.4vw, 84px); line-height:1; letter-spacing:-.02em;
+  margin-bottom:22px; white-space:nowrap;
 }
 .hero h1 span{color:var(--trace);}
+@media (max-width:560px){
+  .hero h1{white-space:normal;}
+}
 .hero-role{
   font-family:var(--font-mono); font-size:clamp(16px,2.4vw,22px); color:var(--steel);
   min-height:32px; margin-bottom:34px;
@@ -561,7 +564,7 @@ footer .credits a{color:var(--trace);}
     <div class="hero-bg" id="heroBg"><img src="assets/img/Photos/ban4.png" alt="" id="heroBgImg"></div>
     <div class="hero-scan grid-bg"></div>
     <div class="container">
-      <h1>Thomas David<br><span>Tency.</span></h1>
+      <h1>Thomas <span>David</span> Tency.</h1>
       <div class="hero-role">&gt; <span id="typedRole"></span><span class="cursor"></span></div>
       <div class="hero-cta">
         <a href="#portfolio" class="btn btn-primary" data-nav>View Portfolio <i class="bi bi-arrow-right"></i></a>
@@ -729,7 +732,7 @@ footer .credits a{color:var(--trace);}
             </div>
             <div class="t-item">
               <h5>Apr 2023 – Feb 2025</h5>
-              <h4>Product Director &amp; Co-founder</h4>
+              <h4>Product Engineer &amp; Co-founder</h4>
               <span class="org">HydrowVerse Pvt Ltd, India</span>
               <ul>
                 <li>Led client engagement, project management, and strategic planning.</li>
