@@ -409,13 +409,26 @@ footer{margin-left:var(--rail-w);}
 .filter-btn:hover{color:var(--paper); border-color:var(--steel);}
 .filter-btn.active{background:var(--trace); color:var(--ink); border-color:var(--trace); font-weight:600;}
 
-.folio-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:22px;}
-@media (max-width:900px){.folio-grid{grid-template-columns:repeat(2,1fr);}}
-@media (max-width:560px){.folio-grid{grid-template-columns:1fr;}}
-.folio-item{transition:opacity .35s ease, transform .35s ease;}
+.folio-hint{
+  display:flex; align-items:center; gap:10px; margin-bottom:24px;
+  font-family:var(--font-mono); font-size:11.5px; color:var(--steel); text-transform:uppercase; letter-spacing:.1em;
+}
+.folio-hint i{color:var(--trace); animation:hint-shift 1.6s ease-in-out infinite;}
+@keyframes hint-shift{0%,100%{transform:translateX(0);} 50%{transform:translateX(6px);}}
+
+.folio-pin-wrap{position:relative;}
+.folio-viewport{
+  position:sticky; top:0; height:100vh; overflow:hidden;
+  display:flex; align-items:center;
+}
+.folio-track{
+  display:flex; gap:26px; padding:0 6vw; will-change:transform;
+}
+.folio-item{flex:0 0 auto; transition:opacity .3s ease;}
 .folio-item.hidden{display:none;}
 .folio-card{
-  position:relative; overflow:hidden; border:1px solid var(--line); cursor:pointer; aspect-ratio:4/3;
+  position:relative; overflow:hidden; border:1px solid var(--line); cursor:pointer;
+  width:min(38vw, 480px); height:min(64vh, 560px);
 }
 .folio-card img{width:100%; height:100%; object-fit:cover; transition:transform .6s cubic-bezier(.2,.7,.2,1);}
 .folio-card:hover img{transform:scale(1.08);}
@@ -426,12 +439,23 @@ footer{margin-left:var(--rail-w);}
 .folio-corner.bl{bottom:10px; left:10px; border-bottom:2px solid; border-left:2px solid;}
 .folio-corner.br{bottom:10px; right:10px; border-bottom:2px solid; border-right:2px solid;}
 .folio-overlay{
-  position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; padding:20px;
+  position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; padding:24px;
   background:linear-gradient(180deg, transparent 40%, rgba(10,14,18,.92));
 }
 .folio-overlay .tag-mini{font-family:var(--font-mono); font-size:10px; color:var(--trace); text-transform:uppercase; letter-spacing:.1em; margin-bottom:6px;}
-.folio-overlay h4{font-size:16.5px; color:#fff; margin-bottom:4px;}
-.folio-overlay p{font-size:12.5px; color:#c4ced5; margin:0;}
+.folio-overlay h4{font-size:18px; color:#fff; margin-bottom:5px;}
+.folio-overlay p{font-size:13px; color:#c4ced5; margin:0;}
+
+@media (max-width:900px){
+  .folio-viewport{position:static; height:auto; display:block;}
+  .folio-pin-wrap{height:auto !important;}
+  .folio-track{display:grid; grid-template-columns:repeat(2,1fr); gap:16px; padding:0; transform:none !important;}
+  .folio-card{width:100%; height:auto; aspect-ratio:4/3;}
+  .folio-hint{display:none;}
+}
+@media (max-width:560px){
+  .folio-track{grid-template-columns:1fr;}
+}
 
 /* ============================================================
    SERVICES
@@ -860,7 +884,12 @@ footer .credits a{color:var(--trace);}
         <button class="filter-btn" data-filter="creative">Creative</button>
       </div>
 
-      <div class="folio-grid reveal" id="folioGrid">
+      <div class="folio-hint reveal"><i class="bi bi-arrow-down"></i> Scroll down — the gallery moves sideways <i class="bi bi-arrow-right"></i></div>
+    </div>
+
+    <div class="folio-pin-wrap" id="folioPinWrap">
+      <div class="folio-viewport">
+        <div class="folio-track reveal" id="folioGrid">
         <div class="folio-item" data-cat="iot water"><div class="folio-card" data-link="Project_Borewell.html">
           <img src="assets/Projects/Borewell Monitoring/1.jpeg" alt="Borewell Monitoring">
           <div class="folio-corner tl"></div><div class="folio-corner tr"></div><div class="folio-corner bl"></div><div class="folio-corner br"></div>
@@ -950,6 +979,7 @@ footer .credits a{color:var(--trace);}
           <div class="folio-corner tl"></div><div class="folio-corner tr"></div><div class="folio-corner bl"></div><div class="folio-corner br"></div>
           <div class="folio-overlay"><div class="tag-mini">Creative / Product</div><h4>Woodworking</h4><p>Handcrafted woodwork design and fabrication</p></div>
         </div></div>
+        </div>
       </div>
     </div>
   </section>
@@ -1081,6 +1111,37 @@ const scrollTopBtn = document.getElementById('scrollTop');
 const heroBgImg = document.getElementById('heroBgImg');
 const heroSection = document.getElementById('hero');
 
+/* ---- Horizontal scroll portfolio track ---- */
+const folioPinWrap = document.getElementById('folioPinWrap');
+const folioTrack = document.getElementById('folioGrid');
+let folioMaxScroll = 0;
+let folioIsHorizontal = false;
+
+function setupFolioScroll(){
+  folioIsHorizontal = window.innerWidth > 900;
+  if (!folioIsHorizontal){
+    folioPinWrap.style.height = 'auto';
+    folioTrack.style.transform = 'none';
+    folioMaxScroll = 0;
+    return;
+  }
+  const viewportW = window.innerWidth;
+  const trackW = folioTrack.scrollWidth;
+  const distance = Math.max(0, trackW - viewportW);
+  folioPinWrap.style.height = (distance + window.innerHeight) + 'px';
+  folioMaxScroll = distance;
+}
+
+function updateFolioScroll(scrollY){
+  if (!folioIsHorizontal || folioMaxScroll <= 0) return;
+  const rect = folioPinWrap.getBoundingClientRect();
+  const wrapTop = rect.top + scrollY;
+  const raw = scrollY - wrapTop;
+  const totalScrollable = folioPinWrap.offsetHeight - window.innerHeight;
+  const progress = totalScrollable > 0 ? Math.min(1, Math.max(0, raw / totalScrollable)) : 0;
+  folioTrack.style.transform = `translateX(${-progress * folioMaxScroll}px)`;
+}
+
 function onScroll(){
   const scrollY = window.scrollY || window.pageYOffset;
   const docHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -1095,6 +1156,8 @@ function onScroll(){
     }
   }
 
+  updateFolioScroll(scrollY);
+
   let current = sectionEls[0].id;
   sectionEls.forEach(sec => {
     const top = sec.getBoundingClientRect().top + scrollY;
@@ -1106,7 +1169,9 @@ function onScroll(){
   history.replaceState(null, '', window.location.pathname);
 }
 window.addEventListener('scroll', onScroll, {passive:true});
-window.addEventListener('load', onScroll);
+window.addEventListener('load', () => { setupFolioScroll(); onScroll(); });
+window.addEventListener('resize', () => { setupFolioScroll(); onScroll(); });
+setupFolioScroll();
 scrollTopBtn.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
 
 /* ============================================================
@@ -1208,6 +1273,8 @@ filterBtns.forEach(btn => {
       const match = f === '*' || item.dataset.cat.split(' ').includes(f);
       item.classList.toggle('hidden', !match);
     });
+    setupFolioScroll();
+    onScroll();
   });
 });
 
